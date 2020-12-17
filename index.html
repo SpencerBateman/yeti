@@ -1,27 +1,30 @@
 <head>
   <style>
-    body { margin: 0; }
-    #canvas {width:100%; height: 100vh}
-    #overlay {width:100%; height: 100vh; position: absolute; top: 0; pointer-events: none;}
-    #sidebar {width: 30%; height: 100vh; background: white; pointer-events: auto;}
-    .show {display: block}
-    .hide {display: none}
-    h1 {margin: 0}
+    body     { margin: 0; }
+    h1       { margin: 0; }
+    #canvas  { width:100%; height: 100vh; }
+    #overlay { width:100%; height: 100vh; position: absolute; top: 0; pointer-events: none; }
+    #sidebar { width: 30%; height: 100vh; background: white; pointer-events: auto;}
+    #sidebar__container {margin: auto; max-width: 90%; padding: 10px 0 0;}
+    .show    { display: block; }
+    .hide    { display: none; }
   </style>
 </head>
+
 <body>
-<div id='canvas' >
-</div>
-<div id='overlay'>
-  <div id='sidebar' class='hide'>
-    <h1>Wireless Club</h1>
-    <br>
-    <p>Thank you for visiting our club.</p>
-    <p>If you want to hangout and chat, click the link below!</p>
-    <a href="https://www.youtube.com/watch?v=ilZGvFmKgQo" target="_blank">ZOOM!</a>
+  <div id='canvas'></div>
+  <div id='overlay'>
+    <div id='sidebar' class='hide'>
+      <div id='sidebar__container'>
+        <h1>Wireless Club</h1>
+        <br>
+        <p>Thank you for visiting our club.</p>
+        <p>If you want to hangout and chat, click the link below!</p>
+        <a href="https://www.youtube.com/watch?v=ilZGvFmKgQo" target="_blank">ZOOM!</a>
+      </div>
+    </div>
   </div>
-</div>
-<script type="module" defer>
+  <script type="module" defer>
 
   /**
   * Imports for Three JS
@@ -35,6 +38,7 @@
   * CONSTANTS
   *
   */
+
   const MOCK_SCALE = 15;
   const CAMERA_START_X = 0;
   const CAMERA_START_Y = .5;
@@ -55,18 +59,9 @@
   * Define variables that will be loaded with data
   *
   */
-  let camera,
-      scene,
-      renderer,
-      geometry,
-      material,
-      mesh,
-      light,
-      controls,
-      playerControls,
-      direction,
-      booth,
-      camDirection;
+  let camera, scene, renderer, geometry, material, mesh, light, controls,
+      playerControls, direction, booth, camDirection;
+
   let PlayerDirectionVector = new THREE.Vector3();
 
   const rotSpeed = .1;
@@ -76,7 +71,6 @@
   var mouse = new THREE.Vector2();
 
   let sidebarVisable = false;
-
 
   init();
   animate();
@@ -117,18 +111,11 @@
       scene.add( gltf.scene );
 
     }, undefined, function ( error ) {
-
       console.error( error );
-
     });
 
     mesh.position.set(0, 1.2, 0);
     booth.position.set(1, 1.2, 0);
-
-    booth.callback = function() {
-
-
-    }
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
 
@@ -187,7 +174,7 @@
       mesh.position.add(direction.multiplyScalar(moveSpeed).multiplyScalar(-1));
     }
   };
-  
+
   function onDocumentMouseDown( event ) {
     var element = document.getElementById("sidebar");
 
@@ -196,26 +183,21 @@
         element.classList.add("hide");
         sidebarVisable = false;
       }
-      console.log(event);
-
     } else {
+      mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+      mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
 
-    mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
-    mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+      raycaster.setFromCamera( mouse, camera );
 
-    raycaster.setFromCamera( mouse, camera );
+      let objects = [booth]
 
-    let objects = [booth]
+      var intersects = raycaster.intersectObjects( objects );
 
-    var intersects = raycaster.intersectObjects( objects );
-
-    if ( intersects.length > 0 ) {
-      element.classList.remove("hide");
-      sidebarVisable = true;
-
+      if ( intersects.length > 0 ) {
+        element.classList.remove("hide");
+        sidebarVisable = true;
+      }
     }
-        }
-
-}
-</script>
+  }
+  </script>
 </body>
