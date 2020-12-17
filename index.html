@@ -4,14 +4,23 @@
     #canvas {width:100%; height: 100vh}
     #overlay {width:100%; height: 100vh; position: absolute; top: 0; pointer-events: none;}
     #sidebar {width: 30%; height: 100vh; background: white; pointer-events: auto;}
+    .show {display: block}
+    .hide {display: none}
+    h1 {margin: 0}
   </style>
 </head>
 <body>
-<div id='canvas' ></div>
-<div id='overlay'>
-  <div id='sidebar'></div>
+<div id='canvas' >
 </div>
-
+<div id='overlay'>
+  <div id='sidebar' class='hide'>
+    <h1>Wireless Club</h1>
+    <br>
+    <p>Thank you for visiting our club.</p>
+    <p>If you want to hangout and chat, click the link below!</p>
+    <a href="https://www.youtube.com/watch?v=ilZGvFmKgQo" target="_blank">ZOOM!</a>
+  </div>
+</div>
 <script type="module" defer>
 
   /**
@@ -46,11 +55,28 @@
   * Define variables that will be loaded with data
   *
   */
-  let camera, scene, renderer, geometry, material, mesh, light, controls, playerControls, direction, camDirection;
+  let camera,
+      scene,
+      renderer,
+      geometry,
+      material,
+      mesh,
+      light,
+      controls,
+      playerControls,
+      direction,
+      booth,
+      camDirection;
   let PlayerDirectionVector = new THREE.Vector3();
 
   const rotSpeed = .1;
   const moveSpeed = .5;
+
+  var raycaster = new THREE.Raycaster();
+  var mouse = new THREE.Vector2();
+
+  let sidebarVisable = false;
+
 
   init();
   animate();
@@ -79,7 +105,10 @@
     material = new THREE.MeshPhongMaterial({color: '#8AC'});
     mesh     = new THREE.Mesh( geometry, material );
 
+    booth = new THREE.Mesh(new THREE.BoxGeometry( 0.5, 0.5, 0.5 ), new THREE.MeshPhongMaterial({color: '#8AC'}));
+
     scene.add( mesh );
+    scene.add( booth );
 
     Loader.load( 'models/mock1.glb', function ( gltf ) {
 
@@ -93,7 +122,13 @@
 
     });
 
-    mesh.position.set(0, 1, 0);
+    mesh.position.set(0, 1.2, 0);
+    booth.position.set(1, 1.2, 0);
+
+    booth.callback = function() {
+
+
+    }
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
 
@@ -118,7 +153,6 @@
 
     // Player rotation
     camera.getWorldDirection(vector3);
-    console.log(vector3.x);
 
     mesh.rotation.set(0, vector3.x, 0);
 
@@ -128,6 +162,7 @@
 
   // ADD THE EVENT LISTENER
   document.addEventListener("keydown", onDocumentKeyDown, false);
+  window.addEventListener('click', onDocumentMouseDown, false);
 
   // KEYBOARD MANAGER
   // ON KEY EVENT MOVE THE PLAYER AND THE CAMERA
@@ -152,5 +187,34 @@
       mesh.position.add(direction.multiplyScalar(moveSpeed).multiplyScalar(-1));
     }
   };
+  function onDocumentMouseDown( event ) {
+    var element = document.getElementById("sidebar");
+
+    if (sidebarVisable) {
+      if (event.target.nodeName == 'CANVAS') {
+        element.classList.add("hide");
+        sidebarVisable = false;
+      }
+      console.log(event);
+
+    } else {
+
+    mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+
+    raycaster.setFromCamera( mouse, camera );
+
+    let objects = [booth]
+
+    var intersects = raycaster.intersectObjects( objects );
+
+    if ( intersects.length > 0 ) {
+      element.classList.remove("hide");
+      sidebarVisable = true;
+
+    }
+        }
+
+}
 </script>
 </body>
