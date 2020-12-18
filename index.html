@@ -55,7 +55,7 @@
   *
   */
   let camera, scene, renderer, geometry, material, mesh, light, controls,
-      playerControls, direction, booth, camDirection, test_dir, directionFinal, targetPosition;
+      playerControls, direction, booth, camDirection, directionFinal, targetPosition;
 
   let PlayerDirectionVector = new THREE.Vector3();
 
@@ -94,13 +94,10 @@
     material = new THREE.MeshPhongMaterial({color: '#8AC'});
     mesh     = new THREE.Mesh( geometry, material );
 
-    test_dir = new THREE.Mesh(new THREE.BoxGeometry( 0.1, 0.1, 0.1 ), new THREE.MeshPhongMaterial({color: '#000'}));
-
     booth = new THREE.Mesh(new THREE.BoxGeometry( 0.2, 1, 1 ), new THREE.MeshPhongMaterial({color: '#8AC'}));
 
     scene.add( mesh );
     scene.add( booth );
-    scene.add( test_dir );
 
     Loader.load('models/mock1.glb', function ( gltf ) {
 
@@ -136,8 +133,6 @@
   function animate() {
     requestAnimationFrame( animate );
     controls.update();
-
-    let test = new THREE.Vector3();
 
     directionFinal = mesh.position.clone().sub( camera.position ).normalize();
     directionFinal.y  = 0;
