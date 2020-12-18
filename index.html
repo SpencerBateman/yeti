@@ -4,8 +4,8 @@
     h1       { margin: 0; }
     #canvas  { width:100%; height: 100vh; }
     #overlay { width:100%; height: 100vh; position: absolute; top: 0; pointer-events: none; }
-    #sidebar { width: 30%; height: 100vh; background: white; pointer-events: auto;}
-    #sidebar__container {margin: auto; max-width: 90%; padding: 10px 0 0;}
+    #sidebar { width: 30%; height: 100vh; background: white; pointer-events: auto; }
+    #sidebar__container { margin: auto; max-width: 90%; padding: 10px 0 0; }
     .show    { display: block; }
     .hide    { display: none; }
   </style>
@@ -38,29 +38,24 @@
   * CONSTANTS
   *
   */
-
-  const MOCK_SCALE = 15;
+  const MOCK_SCALE = 20;
   const CAMERA_START_X = 0;
-  const CAMERA_START_Y = .5;
+  const CAMERA_START_Y = 2;
   const CAMERA_START_Z = -1;
 
-  const X_SPEED =.1;
-  const Y_SPEED =.1;
+  const PLAYER_SPEED = .1;
 
   const BG_COLOR = new THREE.Color(0x87ceeb);
 
   const Loader = new GLTFLoader();
 
-  const RADIUS = 10;
-
-  var vector3 = new THREE.Vector3();
 
   /**
   * Define variables that will be loaded with data
   *
   */
   let camera, scene, renderer, geometry, material, mesh, light, controls,
-      playerControls, direction, booth, camDirection;
+      playerControls, direction, booth, camDirection, test_dir, directionFinal, targetPosition;
 
   let PlayerDirectionVector = new THREE.Vector3();
 
@@ -99,12 +94,15 @@
     material = new THREE.MeshPhongMaterial({color: '#8AC'});
     mesh     = new THREE.Mesh( geometry, material );
 
-    booth = new THREE.Mesh(new THREE.BoxGeometry( 0.5, 0.5, 0.5 ), new THREE.MeshPhongMaterial({color: '#8AC'}));
+    test_dir = new THREE.Mesh(new THREE.BoxGeometry( 0.1, 0.1, 0.1 ), new THREE.MeshPhongMaterial({color: '#000'}));
+
+    booth = new THREE.Mesh(new THREE.BoxGeometry( 0.2, 1, 1 ), new THREE.MeshPhongMaterial({color: '#8AC'}));
 
     scene.add( mesh );
     scene.add( booth );
+    scene.add( test_dir );
 
-    Loader.load( 'models/mock1.glb', function ( gltf ) {
+    Loader.load('models/mock1.glb', function ( gltf ) {
 
       gltf.scene.scale.set(MOCK_SCALE, MOCK_SCALE, MOCK_SCALE);
 
@@ -114,11 +112,11 @@
       console.error( error );
     });
 
-    mesh.position.set(0, 1.2, 0);
-    booth.position.set(1, 1.2, 0);
+    mesh.position.set(0, 1.5, 0);
+    booth.position.set(1, 1.5, 0);
+    targetPosition = new THREE.Vector3(0, 1.5, 0);
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
-
     renderer.setSize( window.innerWidth, window.innerHeight );
 
     // Controls for Camera
@@ -136,14 +134,17 @@
   }
 
   function animate() {
+    requestAnimationFrame( animate );
     controls.update();
 
-    // Player rotation
-    camera.getWorldDirection(vector3);
+    let test = new THREE.Vector3();
 
-    mesh.rotation.set(0, vector3.x, 0);
+    directionFinal = mesh.position.clone().sub( camera.position ).normalize();
+    directionFinal.y  = 0;
 
-    requestAnimationFrame( animate );
+    mesh.position.lerp(targetPosition, PLAYER_SPEED);
+
+
     renderer.render( scene, camera );
   }
 
@@ -159,22 +160,11 @@
 
     // W KEY -- Forward
     if (keyCode == 87) {
-      mesh.position.add(direction.multiplyScalar(moveSpeed));
-
-    // A KEY -- Left
-    } else if (keyCode == 65) {
-      mesh.rotation.y += X_SPEED;
-
-    // D KEY -- Right
-    } else if (keyCode == 68) {
-      mesh.rotation.y -= X_SPEED;
-
-    // S KEY -- Backwards
-    } else if (keyCode == 83) {
-      mesh.position.add(direction.multiplyScalar(moveSpeed).multiplyScalar(-1));
+      targetPosition.add(directionFinal.clone().multiplyScalar(1));
     }
   };
 
+  // CLICK MANAGER
   function onDocumentMouseDown( event ) {
     var element = document.getElementById("sidebar");
 
