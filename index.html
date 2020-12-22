@@ -82,7 +82,7 @@
   */
   let camera, scene, renderer, geometry, material, mesh, light, controls,
       playerControls, direction, camDirection, directionFinal, targetPosition,
-      clickables;
+      clickables, lightTarget;
 
 
 
@@ -117,8 +117,11 @@
     camera.position.set(CAMERA_START_X, CAMERA_START_Y, CAMERA_START_Z);
 
     // SETUP THE LIGHTING
-    light = new THREE.HemisphereLight(0x87ceeb, 0xff0000, .5);
-    scene.add(light);
+    const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    directionalLight.target = (4, 0, 4);
+
+    const light = new THREE.AmbientLight( 0x404040 ); // soft white light
+    scene.add( light );
 
     // SETUP PLAYER
     geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
@@ -126,6 +129,14 @@
     mesh     = new THREE.Mesh( geometry, material );
 
     scene.add( mesh );
+
+    lightTarget = new THREE.Mesh( new THREE.BoxGeometry( 0.2, 0.2, 0.2 ), new THREE.MeshPhongMaterial({color: '#8AC'}) );
+
+    scene.add(lightTarget)
+
+    directionalLight.position.set(-10, 10, -10)
+    directionalLight.target = lightTarget;
+    scene.add(directionalLight);
 
     Loader.load('models/mock1.glb', function ( gltf ) {
 
@@ -138,6 +149,8 @@
     }, undefined, function ( error ) {
       console.error( error );
     });
+
+    lightTarget.position.set(5, 0, 5);
 
     mesh.position.set(0, 1.5, 0);
 
