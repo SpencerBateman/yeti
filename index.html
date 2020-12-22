@@ -17,10 +17,6 @@
     <div id='sidebar' class='hide'>
       <div id='sidebar__container'>
         <h1>Wireless Club</h1>
-        <br>
-        <p>Thank you for visiting our club.</p>
-        <p>If you want to hangout and chat, click the link below!</p>
-        <a href="https://www.youtube.com/watch?v=ilZGvFmKgQo" target="_blank">ZOOM!</a>
       </div>
     </div>
   </div>
@@ -39,6 +35,7 @@
   *
   */
   const MOCK_SCALE = 20;
+  const MOCK_START_HEIGHT = 1.2;
   const CAMERA_START_X = 0;
   const CAMERA_START_Y = 2;
   const CAMERA_START_Z = -1;
@@ -49,13 +46,38 @@
 
   const Loader = new GLTFLoader();
 
+  const BOOTHS = [
+    {
+      title: "Shakespeare Club",
+      html: "<br><p>Thank you for visiting our club.</p><p>If you want to hangout and chat, click the link below!</p><a href='https://www.youtube.com/watch?v=ilZGvFmKgQo' target='_blank'>ZOOM!</a>",
+      x: 2.2,
+      y: 1.5,
+      z: 0
+    },
+    {
+      title: "Wireless Club",
+      html: "<br><p>Thank you for visiting our club.</p><p>If you want to hangout and chat, click the link below!</p><a href='https://www.youtube.com/watch?v=ilZGvFmKgQo' target='_blank'>ZOOM!</a>",
+      x: -2.2,
+      y: 1.5,
+      z: 0
+    },
+    {
+      title: "Romantic Philosophy",
+      html: "<br><p>Thank you for visiting our club.</p><p>If you want to hangout and chat, click the link below!</p><a href='https://www.youtube.com/watch?v=ilZGvFmKgQo' target='_blank'>ZOOM!</a>",
+      x: -.2,
+      y: 1.5,
+      z: -2
+    },
+  ]
+
 
   /**
   * Define variables that will be loaded with data
   *
   */
   let camera, scene, renderer, geometry, material, mesh, light, controls,
-      playerControls, direction, booth, camDirection, directionFinal, targetPosition;
+      playerControls, direction, camDirection, directionFinal, targetPosition,
+      clickables;
 
   let PlayerDirectionVector = new THREE.Vector3();
 
@@ -66,6 +88,8 @@
   var mouse = new THREE.Vector2();
 
   let sidebarVisable = false;
+
+  clickables = [];
 
   init();
   animate();
@@ -94,14 +118,16 @@
     material = new THREE.MeshPhongMaterial({color: '#8AC'});
     mesh     = new THREE.Mesh( geometry, material );
 
-    booth = new THREE.Mesh(new THREE.BoxGeometry( 0.2, 1, 1 ), new THREE.MeshPhongMaterial({color: '#8AC'}));
+    // booth = new THREE.Mesh(new THREE.BoxGeometry( 0.2, 1, 1 ), new THREE.MeshPhongMaterial({color: '#8AC'}));
 
     scene.add( mesh );
-    scene.add( booth );
+    // scene.add( booth );
 
     Loader.load('models/mock1.glb', function ( gltf ) {
 
       gltf.scene.scale.set(MOCK_SCALE, MOCK_SCALE, MOCK_SCALE);
+      gltf.scene.position.set(0, MOCK_START_HEIGHT, 0);
+
 
       scene.add( gltf.scene );
 
@@ -110,7 +136,7 @@
     });
 
     mesh.position.set(0, 1.5, 0);
-    booth.position.set(1, 1.5, 0);
+    // booth.position.set(1, 1.5, 0);
     targetPosition = new THREE.Vector3(0, 1.5, 0);
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -127,6 +153,17 @@
     playerControls = new OrbitControls(mesh, renderer.domElement);
     playerControls.target = mesh.position;
 
+
+    // CREATE BOOTHS
+    for (let i = 0; i < BOOTHS.length; i++) {
+      // Create temp reference for the booth mesh;
+      let tester = new THREE.Mesh(new THREE.BoxGeometry( .5, 1, 1 ), new THREE.MeshPhongMaterial({color: '#8AC'}));
+      tester.name = BOOTHS[i].title;
+      clickables.push(tester)
+      scene.add( tester );
+      tester.position.set(BOOTHS[i].x, BOOTHS[i].y, BOOTHS[i].z);
+    }
+
     document.getElementById('canvas').appendChild( renderer.domElement );
   }
 
@@ -138,7 +175,6 @@
     directionFinal.y  = 0;
 
     mesh.position.lerp(targetPosition, PLAYER_SPEED);
-
 
     renderer.render( scene, camera );
   }
@@ -157,6 +193,9 @@
     if (keyCode == 87) {
       targetPosition.add(directionFinal.clone().multiplyScalar(1));
     }
+    if (keyCode == 83) {
+      targetPosition.add(directionFinal.clone().multiplyScalar(-1));
+    }
   };
 
   // CLICK MANAGER
@@ -174,11 +213,21 @@
 
       raycaster.setFromCamera( mouse, camera );
 
-      let objects = [booth]
+      let objects = clickables;
+      var intersects = raycaster.intersectObjects(objects);
 
-      var intersects = raycaster.intersectObjects( objects );
+      let html = "";
+      let title = "";
+
+      for (let i = 0; i < BOOTHS.length; i ++ ){
+        if (BOOTHS[i].title == intersects[0].object.name) {
+          html = BOOTHS[i].html;
+          title = "<h1>" + BOOTHS[i].title + "</h1>";
+        }
+      }
 
       if ( intersects.length > 0 ) {
+        document.getElementById("sidebar__container").innerHTML = title + html;
         element.classList.remove("hide");
         sidebarVisable = true;
       }
