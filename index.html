@@ -146,7 +146,8 @@
     controls = new OrbitControls(camera, renderer.domElement);
     controls.target = mesh.position;
     controls.minDistance = 1;
-  	controls.maxDistance = 2;
+  	// controls.maxDistance = 2;
+    controls.maxDistance = 100;
     controls.enablePan = false;
 
     // Controls for Player
